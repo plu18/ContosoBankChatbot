@@ -1,4 +1,5 @@
 ﻿using AdaptiveCards;
+using ContosoBankChatbot.AdaptiveCards;
 using ContosoBankChatbot.Scorables;
 using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Builder.Dialogs.Internals;
@@ -33,54 +34,14 @@ namespace ContosoBankChatbot.Dialogs
         protected override IList<Attachment> GetCardAttachments()
         {
 
-            var card = new AdaptiveCard()
-            {
-                Body = new List<CardElement>()
-                {
-                    new TextBlock()
-                    {
-                        Text = "Entry what user name, Email and phone number do you want to use? ",
-                        Weight = TextWeight.Bolder
-                    },
-                    new TextInput()
-                    {
-                        Id = "username",
-                        Placeholder = "Input your user name",
-                        Style = TextInputStyle.Text
-                    },
-                    new TextInput()
-                    {
-                        Id = "email",
-                        Placeholder = "Input your Email",
-                        Style = TextInputStyle.Email
-                    },
-                    new TextInput()
-                    {
-                        Id = "phonenumber",
-                        Placeholder = "Input your phone number",
-                        Style = TextInputStyle.Tel
-                    }
-                },
-                Actions = new List<ActionBase>()
-                {
-                    new SubmitAction()
-                    {
-                        Title = "Submit",
-                        DataJson = "{ \"Type\": \"SignInSubmit\" }"
-                    }
-                }
-            };
-
             return new List<Attachment>
             {
                 new Attachment
                 {
                     ContentType = AdaptiveCard.ContentType,
-                    Content = card
+                    Content = AdaptiveCardFactory.CreateNormalAdaptiveCard(Constants.SignInCard)
                 }
             };
-
-
         }
     }
 }

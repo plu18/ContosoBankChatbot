@@ -13,7 +13,7 @@ namespace ContosoBankChatbot.Data.Migrations
         
         string IMigrationMetadata.Id
         {
-            get { return "201709230838529_InitialSetup"; }
+            get { return "201709250519376_InitialSetup"; }
         }
         
         string IMigrationMetadata.Source

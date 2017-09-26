@@ -5,14 +5,14 @@ namespace ContosoBankChatbot.Data.Migrations
     using System.Data.Entity.Migrations;
     using System.Linq;
 
-    internal sealed class Configuration : DbMigrationsConfiguration<ContosoBankChatbot.Data.ConversationDataContext>
+    internal sealed class Configuration : DbMigrationsConfiguration<ContosoBankChatbot.Data.ContosoBankDataContext>
     {
         public Configuration()
         {
             AutomaticMigrationsEnabled = false;
         }
 
-        protected override void Seed(ContosoBankChatbot.Data.ConversationDataContext context)
+        protected override void Seed(ContosoBankChatbot.Data.ContosoBankDataContext context)
         {
             //  This method will be called after migrating to the latest version.
 

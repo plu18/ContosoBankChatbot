@@ -3,6 +3,7 @@ using AutoMapper;
 using ContosoBankChatbot.AdaptiveCards;
 using ContosoBankChatbot.Data;
 using ContosoBankChatbot.Models;
+using ContosoBankChatbot.Utils;
 using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Connector;
 using Newtonsoft.Json;
@@ -30,75 +31,61 @@ namespace ContosoBankChatbot.Dialogs
 
         private async Task MessageReceivedAsync(IDialogContext context, IAwaitable<IMessageActivity> result)
         {
-            var message = await result;
+            Activity activity = await result as Activity;
 
-            Account account = (Account)JsonConvert.DeserializeObject<Account>(message.Value.ToString());
-
-            String userName = account.UserName;
-            String email = account.Email;
-            String phoneNumber = account.PhoneNumber;
+            Account account = (Account)JsonConvert.DeserializeObject<Account>(activity.Value.ToString());
+            
 
             Regex regexEmail = new Regex(BotAssets.RegexConstants.Email);
             Regex regexPhone = new Regex(BotAssets.RegexConstants.Phone);
 
-            if (String.IsNullOrWhiteSpace(userName)
-                && String.IsNullOrWhiteSpace(email)
-                && String.IsNullOrWhiteSpace(phoneNumber))
+            if (!String.IsNullOrWhiteSpace(account.UserName)
+                && !String.IsNullOrWhiteSpace(account.Email)
+                && !String.IsNullOrWhiteSpace(account.PhoneNumber))
             {
-                await GetLoginAdaptiveCardAttachment(context);
+                if (!regexEmail.IsMatch(account.Email))
+                    await context.PostAsync($" Your input Email '{account.Email}' is not available! ");
+
+                if (!regexPhone.IsMatch(account.PhoneNumber))
+                    await context.PostAsync($" Your input Phone Number '{account.PhoneNumber}' is not available! ");
+
+                if (regexEmail.IsMatch(account.Email) && regexPhone.IsMatch(account.PhoneNumber))
+                {
+                    using (ContosoBankDataContext dataContext = new ContosoBankDataContext())
+                    {
+                        var query = from accountData in dataContext.BankAccounts
+                                    where accountData.UserName == account.UserName 
+                                    && accountData.Email == account.Email
+                                    && accountData.PhoneNumber == account.PhoneNumber
+                                    && accountData.isDeleted == false
+                                    select accountData;
+                        
+                        if (query.Any())
+                        {
+                            context.ConversationData.SetValue(Constants.isLoginKey, true);
+                            context.ConversationData.SetValue(Constants.UserNameKey, account.UserName);
+                            context.ConversationData.SetValue(Constants.UserEmailKey, account.Email);
+                            context.ConversationData.SetValue(Constants.UserPhoneNumberKey, account.PhoneNumber);
+                            
+                        }
+                    }
+                }
+            }
+            
+            if (context.ConversationData.GetValue<bool>(Constants.isLoginKey))
+            {
+                string UserName;
+                context.ConversationData.TryGetValue(Constants.UserNameKey, out UserName);
+                await context.PostAsync($"Dear {UserName}, Thanks for login Contoso Bank. ");
+                context.Done<object>(null);
             }
             else
             {
-                if (!regexEmail.IsMatch(email))
-                {
-                    await context.PostAsync($" Your input Email {email} is not available! ");
-                }
-
-                if (!regexPhone.IsMatch(phoneNumber))
-                {
-                    await context.PostAsync($" Your input Phone Number {phoneNumber} is not available! ");
-
-                }
-
-                if (regexEmail.IsMatch(email) && regexPhone.IsMatch(phoneNumber))
-                {
-                    using (ConversationDataContext dataContext = new ConversationDataContext())
-                    {
-                        foreach (BankAccount bankAccount in dataContext.BankAccounts)
-                        {
-                            if (userName == bankAccount.UserName
-                                && email == bankAccount.Email
-                                && phoneNumber == bankAccount.PhoneNumber)
-                            {
-                                RootDialog._currentAccount.IsLogin = true;
-                                RootDialog._currentAccount.UserName = userName;
-                                RootDialog._currentAccount.Email = email;
-                                RootDialog._currentAccount.PhoneNumber = phoneNumber;
-                                break;
-                            }
-
-                        }
-
-                    }
-
-                    if (RootDialog._currentAccount.IsLogin)
-                    {
-                        await context.PostAsync($"Dear {RootDialog._currentAccount.UserName}, Thanks for login Contoso Bank. ");
-                        context.Done<object>(null);
-                    }
-                    else
-                    {
-                        await context.PostAsync(" You have not Signned In yet. " +
-                                    "Please create an account first. " +
-                                    "Or check you login input correct ");
-                        
-                    }
-                }
-                else
-                {
-                    await context.PostAsync("Please try again");
-                    await GetLoginAdaptiveCardAttachment(context);
-                }
+                await context.PostAsync(" You have not Signned In yet. " +
+                            "Please create an account first. " +
+                            "Or check you login input correct ");
+                await context.PostAsync("Please try again");
+                await GetLoginAdaptiveCardAttachment(context);
             }
         }
 
@@ -108,7 +95,7 @@ namespace ContosoBankChatbot.Dialogs
             Attachment attachment = new Attachment()
             {
                 ContentType = AdaptiveCard.ContentType,
-                Content = AdaptiveCardFactory.CreateAdaptiveCard(Constants.LoginCard, null)
+                Content = AdaptiveCardFactory.CreateNormalAdaptiveCard(Constants.LoginCard)
             };
 
             var reply = context.MakeMessage();

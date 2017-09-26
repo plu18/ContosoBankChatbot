@@ -72,7 +72,7 @@ namespace ContosoBankChatbot.Dialogs
                 Attachment attachment = new Attachment()
                 {
                     ContentType = AdaptiveCard.ContentType,
-                    Content = AdaptiveCardFactory.CreateAdaptiveCard(Constants.StockUpdateCard, stockPrice)
+                    Content = AdaptiveCardFactory.CreateStockAdaptiveCard(stockPrice)
                 };
                 var reply = context.MakeMessage();
                 reply.Attachments.Add(attachment);

@@ -208,7 +208,7 @@
     <Compile Include="Constants\Constants.cs" />
     <Compile Include="Controllers\MessagesController.cs" />
     <Compile Include="Dialogs\ExchangeRateLuisDialog.cs" />
-    <Compile Include="Dialogs\LoggedinLuisDialog.cs" />
+    <Compile Include="Dialogs\CustomerLuisDialog.cs" />
     <Compile Include="Dialogs\RootDialog.cs" />
     <Compile Include="Dialogs\SignInDialog.cs" />
     <Compile Include="Dialogs\LoginDialog.cs" />
@@ -238,6 +238,7 @@
     <Compile Include="Services\BingSpellCheckResponse.cs" />
     <Compile Include="Services\BingSpellCheckService.cs" />
     <Compile Include="Services\BingSpellCheckSuggestion.cs" />
+    <Compile Include="Utils\StateServiceHandler.cs" />
     <Compile Include="Utils\YahooStock.cs" />
   </ItemGroup>
   <ItemGroup>

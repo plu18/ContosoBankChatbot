@@ -7,13 +7,13 @@ using System.Threading.Tasks;
 
 namespace ContosoBankChatbot.Data
 {
-    public class ConversationDataContext : DbContext
+    public class ContosoBankDataContext : DbContext
     {
-        public ConversationDataContext()
-            : base("ConversationDataContextConnectionString")
+        public ContosoBankDataContext()
+            : base("ContosoBankDataContextConnectionString")
         {
         }
-        public DbSet<Activity> Activities { get; set; }
+        public DbSet<MessageActivity> MessageActivities { get; set; }
         public DbSet<BankAccount> BankAccounts { get; set; }
     }
 }

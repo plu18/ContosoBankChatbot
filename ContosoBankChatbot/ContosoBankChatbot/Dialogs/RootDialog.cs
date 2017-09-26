@@ -10,13 +10,13 @@ using System.Windows.Input;
 using ContosoBankChatbot.Services;
 using System.Diagnostics;
 using System.Collections.Generic;
+using ContosoBankChatbot.Utils;
 
 namespace ContosoBankChatbot.Dialogs
 {
     [Serializable]
-    public class RootDialog : IDialog<object>
+    public class RootDialog : IDialog<Activity>
     {
-        public static CurrentAccountSingleton _currentAccount = new CurrentAccountSingleton();
 
         private const string SignInOption = "Create a new account";
         private const string LoginOption = "Already have an account";
@@ -26,6 +26,11 @@ namespace ContosoBankChatbot.Dialogs
 
         public Task StartAsync(IDialogContext context)
         {
+            context.ConversationData.SetValue(Constants.isLoginKey, false);
+            context.ConversationData.SetValue(Constants.UserNameKey, "");
+            context.ConversationData.SetValue(Constants.UserEmailKey, "");
+            context.ConversationData.SetValue(Constants.UserPhoneNumberKey, "");
+
             //await context.PostAsync("Hi, I'm the Contoso Bank bot. Let's get started.");
             context.Wait(this.MessageReceivedAsync);
             return Task.CompletedTask;
@@ -46,27 +51,53 @@ namespace ContosoBankChatbot.Dialogs
         }
         
 
-        private async Task SignInDialogResumeAfter(IDialogContext context, IAwaitable<string> result)
+        private async Task SignInDialogResumeAfter(IDialogContext context, IAwaitable<object> result)
         {
             await context.PostAsync("after sign in");
-            await this.SendWelcomeMessageAsync(context);
-            //try
-            //{
-            //    this.SignInName = await result;
+            try
+            {
+                if (context.ConversationData.GetValue<bool>(Constants.isLoginKey))
+                    context.Call(new CustomerLuisDialog(), this.LogoutDialogResumeAfter);
+                else
+                    await this.SendWelcomeMessageAsync(context);
+            }
+            catch (TooManyAttemptsException)
+            {
+                await context.PostAsync("I'm sorry, I'm having issues understanding you. Let's try again.");
 
-            //    context.Call(new LoginDialog(), this.LoginDialogResumeAfter);
-            //}
-            //catch (TooManyAttemptsException)
-            //{
-            //    await context.PostAsync("I'm sorry, I'm having issues understanding you. Let's try again.");
-
-            //    await this.SendWelcomeMessageAsync(context);
-            //}
+                await this.SendWelcomeMessageAsync(context);
+            }
         }
 
-        private async Task LoginDialogResumeAfter(IDialogContext context, IAwaitable<string> result)
+        private async Task LoginDialogResumeAfter(IDialogContext context, IAwaitable<object> result)
         {
-            await context.PostAsync("after login");
+            //Activity activity = result as Activity;
+            //string UserName = await StateServiceHandler.GetStateProperty<string>(activity, "UserName");
+            //Activity activity = await result;
+            string UserName = context.ConversationData.GetValue<string>(Constants.UserNameKey);
+            await context.PostAsync($"after login: {UserName}");
+            //await this.SendWelcomeMessageAsync(context);
+            try
+            {
+                if (context.ConversationData.GetValue<bool>(Constants.isLoginKey))
+                    context.Call(new CustomerLuisDialog(), this.LogoutDialogResumeAfter);
+                else
+                    await this.SendWelcomeMessageAsync(context);
+
+            }
+            catch (TooManyAttemptsException)
+            {
+                await context.PostAsync("I'm sorry, I'm having issues understanding you. Let's try again.");
+
+                await this.SendWelcomeMessageAsync(context);
+            }
+        }
+
+        private async Task LogoutDialogResumeAfter(IDialogContext context, IAwaitable<object> result)
+        {
+            
+
+            await context.PostAsync("after log out");
             await this.SendWelcomeMessageAsync(context);
         }
 
@@ -83,7 +114,7 @@ namespace ContosoBankChatbot.Dialogs
         }
         
 
-        private void ShowOptions(IDialogContext context)
+        private async void ShowOptions(IDialogContext context)
         {
             PromptDialog.Choice(context, this.OnOptionSelected, 
                 new List<string>() { SignInOption, LoginOption, RateCheckOption, StockCheckOption }, 

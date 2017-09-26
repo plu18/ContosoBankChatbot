@@ -5,24 +5,17 @@ using System.Web;
 using System.ComponentModel.DataAnnotations;
 using AdaptiveCards;
 using ContosoBankChatbot.Models;
+using ContosoBankChatbot.Data;
 
 namespace ContosoBankChatbot.AdaptiveCards
 {
     public class AdaptiveCardFactory
     {
-        public static AdaptiveCard CreateAdaptiveCard(String type, StockPrice stockPrice)
+        public static AdaptiveCard CreateNormalAdaptiveCard(String type)
         {
             AdaptiveCard adaptiveCard = null;
 
-            if (type.Equals(Constants.StockUpdateCard))
-            {
-                adaptiveCard = GetStockAdaptiveCard(stockPrice);
-            }
-            else if (type.Equals(Constants.ExchangeRateCard))
-            {
-                adaptiveCard = GetExchangeAdaptiveCard();
-            }
-            else if (type.Equals(Constants.SignInCard))
+            if (type.Equals(Constants.SignInCard))
             {
                 adaptiveCard = GetSignInCard();
             }
@@ -34,11 +27,60 @@ namespace ContosoBankChatbot.AdaptiveCards
             return adaptiveCard;
         }
 
+        public static AdaptiveCard CreateStockAdaptiveCard(
+            StockPrice stockPrice)
+        {
+            AdaptiveCard adaptiveCard = null;
+            adaptiveCard = GetStockAdaptiveCard(stockPrice);
+            return adaptiveCard;
+        }
+
+        public static AdaptiveCard CreateUserInfoAdaptiveCard(BankAccount bankAccount)
+        {
+            AdaptiveCard adaptiveCard = null;
+            adaptiveCard = GetUserInfoCard(bankAccount);
+            return adaptiveCard;
+        }
+
         private static AdaptiveCard GetExchangeAdaptiveCard()
         {
 
             return new AdaptiveCard()
             {
+
+            };
+        }
+
+        private static AdaptiveCard GetUserInfoCard(BankAccount bankAccount)
+        {
+            return new AdaptiveCard()
+            {
+                Body = new List<CardElement>()
+                {
+                    new ColumnSet()
+                    {
+                        Columns = new List<Column>()
+                        {
+                            new Column()
+                            {
+                                Size = ColumnSize.Stretch,
+                                Items = new List<CardElement>()
+                                {
+                                    new FactSet()
+                                    {
+                                        Facts = new List<Fact>()
+                                        {
+                                            new Fact() { Title = "User Name", Value = $"{bankAccount.UserName.ToString()}"},
+                                            new Fact() { Title = "Email", Value = $"{bankAccount.Email.ToString()}"},
+                                            new Fact() { Title = "Phone Number", Value = $"{bankAccount.PhoneNumber.ToString()}"},
+                                            new Fact() { Title = "Balance", Value = $"{bankAccount.Balance.ToString()}"}
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
 
             };
         }

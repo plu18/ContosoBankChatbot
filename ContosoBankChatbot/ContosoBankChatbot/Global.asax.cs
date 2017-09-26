@@ -6,6 +6,7 @@ using ContosoBankChatbot.Models;
 using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Builder.Dialogs.Internals;
 using Microsoft.Bot.Builder.Internals.Fibers;
+using Microsoft.Bot.Connector;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,7 +24,7 @@ namespace ContosoBankChatbot
 
             AutoMapper.Mapper.Initialize(cfg =>
             {
-                cfg.CreateMap<Microsoft.Bot.Connector.IMessageActivity, Data.Activity>()
+                cfg.CreateMap<Microsoft.Bot.Connector.IMessageActivity, Data.MessageActivity>()
                     .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
                     .ForMember(dest => dest.Type, opt => opt.MapFrom(src => src.Type))
                     .ForMember(dest => dest.FromID, opt => opt.MapFrom(src => src.From.Id))
@@ -50,11 +51,11 @@ namespace ContosoBankChatbot
 
         private void RegisterBotModules()
         {
-            var builder = new ContainerBuilder();
-
             //builder.RegisterModule(new ReflectionSurrogateModule());
 
             //builder.RegisterModule<GlobalMessageHandlersBotModule>();
+            var builder = new ContainerBuilder();
+            
 
             builder.RegisterType<MessageActivityLogger>().AsImplementedInterfaces().InstancePerDependency();
 

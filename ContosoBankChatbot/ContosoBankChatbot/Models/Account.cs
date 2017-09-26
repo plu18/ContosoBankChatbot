@@ -12,5 +12,7 @@ namespace ContosoBankChatbot.Models
         public string Email { get; set; }
         public string PhoneNumber { get; set; }
         public double Balance { get; set; }
+        public DateTime CreatedTime { get; set; }
+        public bool isDeleted { get; set; }
     }
 }

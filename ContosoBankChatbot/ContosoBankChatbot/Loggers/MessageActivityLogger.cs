@@ -14,12 +14,12 @@ namespace ContosoBankChatbot.Loggers
         Task IActivityLogger.LogAsync(IActivity activity)
         {
             IMessageActivity msg = activity.AsMessageActivity();
-            using (Data.ConversationDataContext dataContext = new Data.ConversationDataContext())
+            using (Data.ContosoBankDataContext dataContext = new Data.ContosoBankDataContext())
             {
-                var newActivity = Mapper.Map<IMessageActivity, Data.Activity>(msg);
+                var newActivity = Mapper.Map<IMessageActivity, Data.MessageActivity>(msg);
                 if (string.IsNullOrEmpty(newActivity.Id))
                     newActivity.Id = Guid.NewGuid().ToString();
-                dataContext.Activities.Add(newActivity);
+                dataContext.MessageActivities.Add(newActivity);
                 dataContext.SaveChanges();
             }
             return Task.CompletedTask;

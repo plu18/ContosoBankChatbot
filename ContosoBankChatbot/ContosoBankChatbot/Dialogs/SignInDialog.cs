@@ -12,13 +12,14 @@ using Newtonsoft.Json;
 using ContosoBankChatbot.AdaptiveCards;
 using System.Text.RegularExpressions;
 using AutoMapper;
+using ContosoBankChatbot.Utils;
 
 namespace ContosoBankChatbot.Dialogs
 {
     [Serializable]
     public class SignInDialog : IDialog<string>
     {
-        
+
         public async Task StartAsync(IDialogContext context)
         {
             await context.PostAsync("Entry what user name, Email and phone number do you want to use?");
@@ -29,67 +30,89 @@ namespace ContosoBankChatbot.Dialogs
 
         private async Task MessageReceivedAsync(IDialogContext context, IAwaitable<IMessageActivity> result)
         {
-            var message = await result;
+            Activity activity = await result as Activity;
 
-            Account account = (Account)JsonConvert.DeserializeObject<Account>(message.Value.ToString());
+            Account account = (Account)JsonConvert.DeserializeObject<Account>(activity.Value.ToString());
             
-            String userName = account.UserName;
-            String email = account.Email;
-            String phoneNumber = account.PhoneNumber;
-
             Regex regexEmail = new Regex(BotAssets.RegexConstants.Email);
             Regex regexPhone = new Regex(BotAssets.RegexConstants.Phone);
 
-            if (String.IsNullOrWhiteSpace(userName) 
-                && String.IsNullOrWhiteSpace(email) 
-                && String.IsNullOrWhiteSpace(phoneNumber))
+            if (!String.IsNullOrWhiteSpace(account.UserName) 
+                && !String.IsNullOrWhiteSpace(account.Email) 
+                && !String.IsNullOrWhiteSpace(account.PhoneNumber))
             {
-                await GetSignInAdaptiveCardAttachment(context);
+                if (!regexEmail.IsMatch(account.Email))
+                    await context.PostAsync($" Your input Email {account.Email} is not available! ");
+
+                if (!regexPhone.IsMatch(account.PhoneNumber))
+                    await context.PostAsync($" Your input Phone Number {account.PhoneNumber} is not available! ");
+                
+                if (regexEmail.IsMatch(account.Email) && regexPhone.IsMatch(account.PhoneNumber))
+                {
+                    using (Data.ContosoBankDataContext dataContext = new Data.ContosoBankDataContext())
+                    {
+                        var queryUserName = from accountData in dataContext.BankAccounts
+                                    where accountData.UserName == account.UserName
+                                    select accountData;
+
+                        var queryEmail = from accountData in dataContext.BankAccounts
+                                            where accountData.Email == account.Email
+                                            select accountData;
+
+                        var queryPhone = from accountData in dataContext.BankAccounts
+                                            where accountData.PhoneNumber == account.PhoneNumber
+                                            select accountData;
+                        //Data.BankAccount queryAccount = query.SingleOrDefault();
+
+                        if (queryUserName.Any())
+                            await context.PostAsync($"User name '{account.UserName}' has been used");
+                        
+                        if (queryEmail.Any())
+                            await context.PostAsync($"Email '{account.Email}' has been used");
+                        
+                        //phone number has been used
+                        if (queryPhone.Any())
+                            await context.PostAsync($"Phone Number '{account.PhoneNumber}' has been used");
+                        
+                        //Create new account
+                        if(!queryUserName.Any() && !queryEmail.Any() && !queryPhone.Any())
+                        { 
+                            var newAccount = Mapper.Map<Account, Data.BankAccount>(account);
+                            if (string.IsNullOrEmpty(newAccount.Id))
+                                newAccount.Id = Guid.NewGuid().ToString();
+                            dataContext.BankAccounts.Add(newAccount);
+                            dataContext.SaveChanges();
+
+                            await context.PostAsync($"Dear {account.UserName}, you have been signed in a new bank account. " +
+                                            $"Your Email is {account.Email}. " +
+                                            $"Your phone is {account.PhoneNumber}");
+
+                            context.ConversationData.SetValue(Constants.isLoginKey, true);
+                            context.ConversationData.SetValue(Constants.UserNameKey, account.UserName);
+                            context.ConversationData.SetValue(Constants.UserEmailKey, account.Email);
+                            context.ConversationData.SetValue(Constants.UserPhoneNumberKey, account.PhoneNumber);
+                            
+                        }
+                    }
+                }
+            }
+
+            bool isLogin = false;
+            context.ConversationData.TryGetValue(Constants.isLoginKey, out isLogin);
+            if (isLogin)
+            {
+                string UserName;
+                context.ConversationData.TryGetValue(Constants.UserNameKey, out UserName);
+                await context.PostAsync($"Dear {UserName}, Thanks for login Contoso Bank. ");
+                context.Done<object>(null);
             }
             else
             {
-                if (!regexEmail.IsMatch(email))
-                {
-                    await context.PostAsync($" Your input Email {email} is not available! ");
-                }
-
-                if (!regexPhone.IsMatch(phoneNumber))
-                {
-                    await context.PostAsync($" Your input Phone Number {phoneNumber} is not available! ");
-
-                }
-                
-                if (regexEmail.IsMatch(email) && regexPhone.IsMatch(phoneNumber))
-                {
-
-                    using (Data.ConversationDataContext dataContext = new Data.ConversationDataContext())
-                    {
-                        var newAccount = Mapper.Map<Account, Data.BankAccount>(account);
-                        if (string.IsNullOrEmpty(newAccount.Id))
-                            newAccount.Id = Guid.NewGuid().ToString();
-                        dataContext.BankAccounts.Add(newAccount);
-                        dataContext.SaveChanges();
-                    }
-
-                    await context.PostAsync($"Dear {userName}, you have been signed in a new bank account. " +
-                                            $"Your Email is {email}. " +
-                                            $"Your phone is {phoneNumber}");
-
-                    RootDialog._currentAccount.IsLogin = true;
-                    RootDialog._currentAccount.UserName = userName;
-                    RootDialog._currentAccount.Email = email;
-                    RootDialog._currentAccount.PhoneNumber = phoneNumber;
-
-                    context.Done<object>(null);
-                }
-                else
-                {
-                    context.Wait(this.MessageReceivedAsync);
-                }
+                await context.PostAsync($"Try again please.");
+                await GetSignInAdaptiveCardAttachment(context);
             }
-            
+                
 
-            
         }
         
         private async Task GetSignInAdaptiveCardAttachment(IDialogContext context)
@@ -97,7 +120,7 @@ namespace ContosoBankChatbot.Dialogs
             Attachment attachment = new Attachment()
             {
                 ContentType = AdaptiveCard.ContentType,
-                Content = AdaptiveCardFactory.CreateAdaptiveCard(Constants.SignInCard, null)
+                Content = AdaptiveCardFactory.CreateNormalAdaptiveCard(Constants.SignInCard)
             };
 
             var reply = context.MakeMessage();

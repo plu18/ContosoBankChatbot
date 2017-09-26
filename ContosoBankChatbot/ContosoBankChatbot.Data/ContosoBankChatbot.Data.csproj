@@ -48,13 +48,13 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Class1.cs" />
-    <Compile Include="ConversationDataContext.cs" />
-    <Compile Include="Migrations\201709230838529_InitialSetup.cs" />
-    <Compile Include="Migrations\201709230838529_InitialSetup.Designer.cs">
-      <DependentUpon>201709230838529_InitialSetup.cs</DependentUpon>
+    <Compile Include="ContosoBankDataContext.cs" />
+    <Compile Include="Migrations\201709250519376_InitialSetup.cs" />
+    <Compile Include="Migrations\201709250519376_InitialSetup.Designer.cs">
+      <DependentUpon>201709250519376_InitialSetup.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Configuration.cs" />
-    <Compile Include="Models\Activity.cs" />
+    <Compile Include="Models\MessageActivity.cs" />
     <Compile Include="Models\BankAccount.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -63,8 +63,8 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Migrations\201709230838529_InitialSetup.resx">
-      <DependentUpon>201709230838529_InitialSetup.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\201709250519376_InitialSetup.resx">
+      <DependentUpon>201709250519376_InitialSetup.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
