@@ -19,16 +19,8 @@ namespace ContosoBankChatbot.Scorables
         public ExtractCodeScorable(IBotToUser botToUser, IBotData botData) : base(botToUser, botData)
         {
         }
-
-        protected override Task PostAsync(IActivity item, bool state, CancellationToken token)
+        public ExtractCodeScorable(IDialogTask task) : base(task)
         {
-            if (state)
-            {
-                this.SaveCode("/Assets/CSharpCode.xml", Constants.LastCSharpKey);
-                this.SaveCode("/Assets/NodeJsCode.xml", Constants.LastNodeJsKey);
-            }
-
-            return Task.CompletedTask;
         }
 
         private void SaveCode(string sourceFile, string key)

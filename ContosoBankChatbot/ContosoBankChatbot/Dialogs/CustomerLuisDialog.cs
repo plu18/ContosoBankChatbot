@@ -66,6 +66,26 @@ namespace ContosoBankChatbot.Dialogs
         public async Task HandleCheckExchangeRateIntent(IDialogContext context, LuisResult result)
         {
             await context.PostAsync("PostAsyncCheckExchangeRate");
+            context.Call(new ExchangeRateLuisDialog(), this.ExchangeRateDialogResumeAfter);
+        }
+
+        private async Task ExchangeRateDialogResumeAfter(IDialogContext context, IAwaitable<string> result)
+        {
+            var message = await result;
+            await context.PostAsync($"after exchange rate: {message}");
+            context.Wait(this.MessageReceived);
+        }
+
+        [LuisIntent("CheckStocks")]
+        public async Task HandleCheckStocksIntent(IDialogContext context, LuisResult result)
+        {
+            await context.PostAsync("PostAsyncCheckStocks");
+            context.Call(new StockLuisDialog(), this.StockDialogResumeAfter);
+        }
+
+        private async Task StockDialogResumeAfter(IDialogContext context, IAwaitable<object> result)
+        {
+            await context.PostAsync("after stock");
             context.Wait(this.MessageReceived);
         }
 

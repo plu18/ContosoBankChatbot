@@ -1,6 +1,7 @@
 ﻿using ContosoBankChatbot.Data;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Web;
 
@@ -20,6 +21,9 @@ namespace ContosoBankChatbot
 
         public const string NodeJsTrigger = "NODE";
 
+        public const string LastStock = "LastStock";
+        
+
         public const string StockUpdateCard = "StockUpdateCard";
         public const string SignInCard = "SignInCard";
         public const string LoginCard = "LoginCard";
@@ -35,6 +39,10 @@ namespace ContosoBankChatbot
 
         public const string Deposit = "Deposit";
         public const string Withdraw = "Withdraw";
+
+        public const string ExchangeFromInputId = "ExchangeFromInputId";
+        public const string ExchangeToInputId = "ExchangeToInputId";
+        public const string ExchangeRateInputValue = "ExchangeRateInputValue";
 
     }
 }

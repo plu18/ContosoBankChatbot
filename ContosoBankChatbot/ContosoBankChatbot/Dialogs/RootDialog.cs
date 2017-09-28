@@ -103,7 +103,8 @@ namespace ContosoBankChatbot.Dialogs
 
         private async Task ExchangeRateDialogResumeAfter(IDialogContext context, IAwaitable<object> result)
         {
-            await context.PostAsync("after exchange rate");
+            var message = await result;
+            await context.PostAsync($"after exchange rate: {message}");
             await this.SendWelcomeMessageAsync(context);
         }
 

@@ -23,10 +23,12 @@ namespace ContosoBankChatbot.Dialogs
         [LuisIntent("StockPrice")]
         public async Task StockPrice(IDialogContext context, LuisResult result)
         {
-            string strRet = result.Entities[0].Entity;
-            context.ConversationData.SetValue<string>("LastStock", strRet);
-            await CreateStockCards(context, strRet);
-
+            if (result.Entities.Any())
+            {
+                string strRet = result.Entities[0].Entity;
+                context.ConversationData.SetValue<string>(Constants.LastStock, strRet);
+                await CreateStockCards(context, strRet);
+            }
             context.Wait(MessageReceived);
         }
 
@@ -35,14 +37,14 @@ namespace ContosoBankChatbot.Dialogs
         {
             string strRet = string.Empty;
             string strStock = string.Empty;
-            if (!context.ConversationData.TryGetValue("LastStock", out strStock))
+            if (!context.ConversationData.TryGetValue(Constants.LastStock, out strStock))
             {
                 strRet = "I don't have a previous stock to look up!";
                 await context.PostAsync(strRet);
             }
             else
             {
-                await CreateStockCards(context, strRet);
+                await CreateStockCards(context, strStock);
             }
             
             context.Wait(MessageReceived);
@@ -53,14 +55,14 @@ namespace ContosoBankChatbot.Dialogs
         {
             string strRet = string.Empty;
             string strStock = string.Empty;
-            if (!context.ConversationData.TryGetValue("LastStock", out strStock))
+            if (!context.ConversationData.TryGetValue(Constants.LastStock, out strStock))
             {
                 strRet = "I don't have a previous stock to look up!";
                 await context.PostAsync(strRet);
             }
             else
             {
-                await CreateStockCards(context, strRet);
+                await CreateStockCards(context, strStock);
             }
             context.Wait(MessageReceived);
         }

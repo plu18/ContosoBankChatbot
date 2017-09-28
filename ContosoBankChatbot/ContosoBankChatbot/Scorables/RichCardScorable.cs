@@ -20,36 +20,11 @@ namespace ContosoBankChatbot.Scorables
         {
         }
 
-        protected abstract IList<Attachment> GetCardAttachments();
-
-        protected override async Task PostAsync(IActivity item, bool state, CancellationToken token)
+        public RichCardScorable(IDialogTask task) : base(task)
         {
-            await base.PostAsync(item, state, token);
-
-            var message = this.BotToUser.MakeMessage();
-
-            message.Attachments = this.GetCardAttachments();
-
-            var sample = RichCardsSample;
-            var text = RichCardsText;
-
-            // should display carousel?
-            if (message.Attachments.Count() > 1)
-            {
-                message.AttachmentLayout = AttachmentLayoutTypes.Carousel;
-                sample = CarouselSample;
-                text = CarouselText;
-            }
-
-            await this.BotToUser.PostAsync(message);
-
-            var moreMessage = this.BotToUser.MakeMessage();
-
-            //TODO: show more messages
-            //moreMessage.Text = $"To know more about {text} check these [C#]({CSharpSamplesRoot + sample}) & [NodeJs]({NodeJsSamplesRoot + sample}) samples. Type **{Constants.Constants.JsonTrigger}** to view attachment details;  or type **{Constants.Constants.CSharpTrigger}** or **{Constants.Constants.NodeJsTrigger}** for the source code that generated this card.";
-            
-            //await this.BotToUser.PostAsync(moreMessage);
         }
+
+        protected abstract IList<Attachment> GetCardAttachments();
 
     }
 }

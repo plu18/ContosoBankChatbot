@@ -217,14 +217,17 @@
     <Compile Include="Loggers\MessageActivityLogger.cs" />
     <Compile Include="Models\Account.cs" />
     <Compile Include="Models\AzureSearchResultModel.cs" />
+    <Compile Include="Models\CurrencyModel.cs" />
     <Compile Include="Models\CurrentAccountSingleton.cs" />
+    <Compile Include="Models\ExchangeRate.cs" />
+    <Compile Include="Models\ExchangeRateInputModel.cs" />
     <Compile Include="Models\lResult.cs" />
     <Compile Include="Models\ResultSet.cs" />
     <Compile Include="Models\StockPrice.cs" />
     <Compile Include="Models\YhooCompanyLookup.cs" />
     <Compile Include="Scorables\ExtractCodeScorable.cs" />
     <Compile Include="Scorables\RichCardScorable.cs" />
-    <Compile Include="Scorables\SignInScorable.cs" />
+    <Compile Include="Scorables\ExchangeRateScorable.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
@@ -238,7 +241,9 @@
     <Compile Include="Services\BingSpellCheckResponse.cs" />
     <Compile Include="Services\BingSpellCheckService.cs" />
     <Compile Include="Services\BingSpellCheckSuggestion.cs" />
+    <Compile Include="Utils\JsonLoader.cs" />
     <Compile Include="Utils\StateServiceHandler.cs" />
+    <Compile Include="Utils\YahooExchangeRate.cs" />
     <Compile Include="Utils\YahooStock.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -246,6 +251,9 @@
       <SubType>Designer</SubType>
     </Content>
     <Content Include="Assets\LuisModels\StockModel.json" />
+    <EmbeddedResource Include="common_currency.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
     <None Include="Properties\PublishProfiles\ContosoBankChatbot - Web Deploy.pubxml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>

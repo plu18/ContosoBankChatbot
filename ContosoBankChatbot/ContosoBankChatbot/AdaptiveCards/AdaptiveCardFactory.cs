@@ -6,11 +6,14 @@ using System.ComponentModel.DataAnnotations;
 using AdaptiveCards;
 using ContosoBankChatbot.Models;
 using ContosoBankChatbot.Data;
+using ContosoBankChatbot.Utils;
 
 namespace ContosoBankChatbot.AdaptiveCards
 {
     public class AdaptiveCardFactory
     {
+        public static Dictionary<string, CurrencyModel> currencyDictionary;
+
         public static AdaptiveCard CreateNormalAdaptiveCard(String type)
         {
             AdaptiveCard adaptiveCard = null;
@@ -42,12 +45,74 @@ namespace ContosoBankChatbot.AdaptiveCards
             return adaptiveCard;
         }
 
-        private static AdaptiveCard GetExchangeAdaptiveCard()
+        public static AdaptiveCard CreateExchangeRateAdaptiveCard()
         {
+            AdaptiveCard adaptiveCard = null;
+            adaptiveCard = GetExchangeRateCard();
+            return adaptiveCard;
+        }
 
+        private static ChoiceSet GetCurrencyChoiceSet(string id, string selectedCode)
+        {
+            List<Choice> currencyChoiceList = new List<Choice>();
+            foreach (KeyValuePair<string, CurrencyModel> currency in currencyDictionary)
+            {
+                if (selectedCode == currency.Value.code)
+                    currencyChoiceList.Add(new Choice { Title = currency.Value.name, Value = currency.Value.code, IsSelected = true});
+                else
+                    currencyChoiceList.Add(new Choice { Title = currency.Value.name, Value = currency.Value.code });
+            }
+
+            ChoiceSet currencyChoiceSet = new ChoiceSet()
+            {
+                Id = id,
+                Style = ChoiceInputStyle.Compact,
+                Value = selectedCode,
+                Choices = currencyChoiceList
+            };
+
+            return currencyChoiceSet;
+        }
+
+        private static AdaptiveCard GetExchangeRateCard()
+        {
+            currencyDictionary = JsonLoader.LoadJsonToCurrency("ContosoBankChatbot.common_currency.json");
             return new AdaptiveCard()
             {
+                Body = new List<CardElement>()
+                {
+                    new TextBlock()
+                    {
+                        Text = "Live Exchange Rates",
+                        Weight = TextWeight.Bolder,
+                        Size = TextSize.Large
+                    },
+                    new TextBlock()
+                    {
+                        Text = "From"
+                    },
+                    new NumberInput()
+                    {
+                        Id = Constants.ExchangeRateInputValue,
+                        Placeholder = "Input",
+                        Value = 1
+                    },
+                    GetCurrencyChoiceSet(Constants.ExchangeFromInputId, "NZD"),
+                    new TextBlock()
+                    {
+                        Text = "To"
+                    },
+                    GetCurrencyChoiceSet(Constants.ExchangeToInputId, "CNY")
+                },
+                Actions = new List<ActionBase>()
+                {
+                    new SubmitAction()
+                    {
+                        Title = "Convert",
+                        DataJson = "{ \"Type\": \"ExchangeRateSubmit\" }"
 
+                    }
+                }
             };
         }
 
@@ -181,12 +246,12 @@ namespace ContosoBankChatbot.AdaptiveCards
             TextBlock changeTextBlock = new TextBlock();
             if (change < 0)
             {
-                changeTextBlock.Text = $"▼ {Math.Abs(change).ToString("#.##")} ({changePercentage.ToString("#.##")}%)";
+                changeTextBlock.Text = $"▼ {Math.Abs(Math.Round(change, 2)).ToString()} ({Math.Round(changePercentage, 2).ToString()}%)";
                 changeTextBlock.Color = TextColor.Attention;
             }
             else
             {
-                changeTextBlock.Text = $"▲ {change.ToString("#.##")} ({changePercentage.ToString("#.##")}%)";
+                changeTextBlock.Text = $"▲ {Math.Round(change, 2).ToString()} ({Math.Round(changePercentage, 2).ToString()}%)";
                 changeTextBlock.Color = TextColor.Good;
             }
             
@@ -228,7 +293,7 @@ namespace ContosoBankChatbot.AdaptiveCards
                                         {
                                             new TextBlock()
                                             {
-                                                Text = $"{stockPrice.LastTradePrice.ToString("#.##")}",
+                                                Text = $"{Math.Round(stockPrice.LastTradePrice, 2).ToString()}",
                                                 Size = TextSize.ExtraLarge
                                             },
                                             changeTextBlock,
@@ -243,9 +308,9 @@ namespace ContosoBankChatbot.AdaptiveCards
                                             {
                                                 Facts = new List<Fact>()
                                                 {
-                                                    new Fact() { Title = "Open", Value = $"{stockPrice.Open.ToString("#.##")}"},
-                                                    new Fact() { Title = "High", Value = $"{stockPrice.DayHigh.ToString("#.##")}"},
-                                                    new Fact() { Title = "Low", Value = $"{stockPrice.DayLow.ToString("#.##")}"}
+                                                    new Fact() { Title = "Open", Value = $"{Math.Round(stockPrice.Open, 2).ToString()}"},
+                                                    new Fact() { Title = "High", Value = $"{Math.Round(stockPrice.DayHigh, 2).ToString()}"},
+                                                    new Fact() { Title = "Low", Value = $"{Math.Round(stockPrice.DayLow, 2).ToString()}"}
                                                 }
                                             }
                                         }

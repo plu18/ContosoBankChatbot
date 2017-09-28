@@ -51,11 +51,10 @@ namespace ContosoBankChatbot
 
         private void RegisterBotModules()
         {
-            //builder.RegisterModule(new ReflectionSurrogateModule());
-
-            //builder.RegisterModule<GlobalMessageHandlersBotModule>();
             var builder = new ContainerBuilder();
-            
+
+            //builder.RegisterModule(new ReflectionSurrogateModule());
+            //builder.RegisterModule<GlobalMessageHandlersBotModule>();
 
             builder.RegisterType<MessageActivityLogger>().AsImplementedInterfaces().InstancePerDependency();
 
