@@ -1,13 +1,17 @@
 # ContosoBankChatbot
 Contoso Bank Chatbot
 
+Demo web view link:
+
+https://webchat.botframework.com/embed/ScottLuoContosoBankChatbot?s=0qmvQRyynHI.cwA.zQg.Yrq8EFiztU5T0r_ExIbn7cIWGuzs-S9-CQO71z7oCxM
+
 Functions implmentation
-Sign in
-Login/logout
-Deposit/withdraw
-Account delete
-Stock show
-Exchange rates show
+1. Sign in
+2. Login/logout
+3. Deposit/withdraw
+4. Account delete
+5. Stock show
+6. Exchange rates show
 
 Demo steps
 1. Type anything to greet with bot.
@@ -42,3 +46,4 @@ Demo steps
 30. Type 'show me [any stock in NASDAQ] stock' (eg. 'show me microsoft stock').
 31. Type 'quit' to quit the stock dialog
 Finish demo
+
