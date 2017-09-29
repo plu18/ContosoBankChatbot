@@ -23,7 +23,7 @@ namespace ContosoBankChatbot.Dialogs
 
         public async Task StartAsync(IDialogContext context)
         {
-            await context.PostAsync("Login Start");
+            //await context.PostAsync("Login Start");
             await GetLoginAdaptiveCardAttachment(context);
             context.Wait(this.MessageReceivedAsync);
 
@@ -33,59 +33,70 @@ namespace ContosoBankChatbot.Dialogs
         {
             Activity activity = await result as Activity;
 
-            Account account = (Account)JsonConvert.DeserializeObject<Account>(activity.Value.ToString());
-            
-
-            Regex regexEmail = new Regex(BotAssets.RegexConstants.Email);
-            Regex regexPhone = new Regex(BotAssets.RegexConstants.Phone);
-
-            if (!String.IsNullOrWhiteSpace(account.UserName)
-                && !String.IsNullOrWhiteSpace(account.Email)
-                && !String.IsNullOrWhiteSpace(account.PhoneNumber))
+            if (!String.IsNullOrWhiteSpace(activity.Text))
             {
-                if (!regexEmail.IsMatch(account.Email))
-                    await context.PostAsync($" Your input Email '{account.Email}' is not available! ");
-
-                if (!regexPhone.IsMatch(account.PhoneNumber))
-                    await context.PostAsync($" Your input Phone Number '{account.PhoneNumber}' is not available! ");
-
-                if (regexEmail.IsMatch(account.Email) && regexPhone.IsMatch(account.PhoneNumber))
-                {
-                    using (ContosoBankDataContext dataContext = new ContosoBankDataContext())
-                    {
-                        var query = from accountData in dataContext.BankAccounts
-                                    where accountData.UserName == account.UserName 
-                                    && accountData.Email == account.Email
-                                    && accountData.PhoneNumber == account.PhoneNumber
-                                    && accountData.isDeleted == false
-                                    select accountData;
-                        
-                        if (query.Any())
-                        {
-                            context.ConversationData.SetValue(Constants.isLoginKey, true);
-                            context.ConversationData.SetValue(Constants.UserNameKey, account.UserName);
-                            context.ConversationData.SetValue(Constants.UserEmailKey, account.Email);
-                            context.ConversationData.SetValue(Constants.UserPhoneNumberKey, account.PhoneNumber);
-                            
-                        }
-                    }
-                }
-            }
-            
-            if (context.ConversationData.GetValue<bool>(Constants.isLoginKey))
-            {
-                string UserName;
-                context.ConversationData.TryGetValue(Constants.UserNameKey, out UserName);
-                await context.PostAsync($"Dear {UserName}, Thanks for login Contoso Bank. ");
-                context.Done<object>(null);
+                PromptDialog.Choice(context, this.OnOptionSelected,
+                    new List<string>() { Constants.YesOption, Constants.NoOption },
+                    $"Do you want to me to do the '{activity.Text}'? " +
+                    $"This will let me to quit the login dialog?");
             }
             else
             {
-                await context.PostAsync(" You have not Signned In yet. " +
-                            "Please create an account first. " +
-                            "Or check you login input correct ");
-                await context.PostAsync("Please try again");
-                await GetLoginAdaptiveCardAttachment(context);
+
+                Account account = (Account)JsonConvert.DeserializeObject<Account>(activity.Value.ToString());
+
+
+                Regex regexEmail = new Regex(BotAssets.RegexConstants.Email);
+                Regex regexPhone = new Regex(BotAssets.RegexConstants.Phone);
+
+                if (!String.IsNullOrWhiteSpace(account.UserName)
+                    && !String.IsNullOrWhiteSpace(account.Email)
+                    && !String.IsNullOrWhiteSpace(account.PhoneNumber))
+                {
+                    if (!regexEmail.IsMatch(account.Email))
+                        await context.PostAsync($" Your input Email '{account.Email}' is not available! ");
+
+                    if (!regexPhone.IsMatch(account.PhoneNumber))
+                        await context.PostAsync($" Your input Phone Number '{account.PhoneNumber}' is not available! ");
+
+                    if (regexEmail.IsMatch(account.Email) && regexPhone.IsMatch(account.PhoneNumber))
+                    {
+                        using (ContosoBankDataContext dataContext = new ContosoBankDataContext())
+                        {
+                            var query = from accountData in dataContext.BankAccounts
+                                        where accountData.UserName == account.UserName
+                                        && accountData.Email == account.Email
+                                        && accountData.PhoneNumber == account.PhoneNumber
+                                        && accountData.isDeleted == false
+                                        select accountData;
+
+                            if (query.Any())
+                            {
+                                context.ConversationData.SetValue(Constants.isLoginKey, true);
+                                context.ConversationData.SetValue(Constants.UserNameKey, account.UserName);
+                                context.ConversationData.SetValue(Constants.UserEmailKey, account.Email);
+                                context.ConversationData.SetValue(Constants.UserPhoneNumberKey, account.PhoneNumber);
+
+                            }
+                        }
+                    }
+                }
+
+                if (context.ConversationData.GetValue<bool>(Constants.isLoginKey))
+                {
+                    string UserName;
+                    context.ConversationData.TryGetValue(Constants.UserNameKey, out UserName);
+                    await context.PostAsync($"Dear {UserName}, Thanks for login Contoso Bank. ");
+                    context.Done<object>(null);
+                }
+                else
+                {
+                    await context.PostAsync(" You have not Signned In yet. " +
+                                "Please create an account first. " +
+                                "Or check you login input correct ");
+                    await context.PostAsync("Please try again");
+                    await GetLoginAdaptiveCardAttachment(context);
+                }
             }
         }
 
@@ -103,5 +114,21 @@ namespace ContosoBankChatbot.Dialogs
             await context.PostAsync(reply);
         }
 
+        private async Task OnOptionSelected(IDialogContext context, IAwaitable<string> result)
+        {
+            string optionSelected = await result;
+
+            switch (optionSelected)
+            {
+                case Constants.YesOption:
+                    context.Done<object>(null);
+                    break;
+
+                case Constants.NoOption:
+                    await GetLoginAdaptiveCardAttachment(context);
+                    context.Wait(this.MessageReceivedAsync);
+                    break;
+            }
+        }
     }
 }

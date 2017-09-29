@@ -207,7 +207,7 @@
     <Compile Include="App_Start\WebApiConfig.cs" />
     <Compile Include="Constants\Constants.cs" />
     <Compile Include="Controllers\MessagesController.cs" />
-    <Compile Include="Dialogs\ExchangeRateLuisDialog.cs" />
+    <Compile Include="Dialogs\ExchangeRateDialog.cs" />
     <Compile Include="Dialogs\CustomerLuisDialog.cs" />
     <Compile Include="Dialogs\RootDialog.cs" />
     <Compile Include="Dialogs\SignInDialog.cs" />

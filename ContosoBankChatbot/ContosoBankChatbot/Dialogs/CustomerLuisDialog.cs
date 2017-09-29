@@ -58,7 +58,14 @@ namespace ContosoBankChatbot.Dialogs
         [LuisIntent("Help")]
         public async Task HandleHelpIntent(IDialogContext context, LuisResult result)
         {
-            await context.PostAsync("PostAsyncHelp");
+            await context.PostAsync("show me - show user informations");
+            await context.PostAsync("deposit [money] - save money eg. deposit $100 or deposit 100 US dollars");
+            await context.PostAsync("withdraw $money - withdraw money eg. withdraw $100 or withdraw 100 US dollars");
+            await context.PostAsync("show me some stocks - call into a stocks dialog");
+            await context.PostAsync("check current exchange rate - call into an exchange rates calculator");
+            await context.PostAsync("logout - logout");
+            await context.PostAsync("delete this account - delete current account if balance is 0");
+            await context.PostAsync("transfer [money] to [email]/[phone number] - transfer money (not implemented yet)");
             context.Wait(this.MessageReceived);
         }
 
@@ -66,7 +73,7 @@ namespace ContosoBankChatbot.Dialogs
         public async Task HandleCheckExchangeRateIntent(IDialogContext context, LuisResult result)
         {
             await context.PostAsync("PostAsyncCheckExchangeRate");
-            context.Call(new ExchangeRateLuisDialog(), this.ExchangeRateDialogResumeAfter);
+            context.Call(new ExchangeRateDialog(), this.ExchangeRateDialogResumeAfter);
         }
 
         private async Task ExchangeRateDialogResumeAfter(IDialogContext context, IAwaitable<string> result)
@@ -129,11 +136,11 @@ namespace ContosoBankChatbot.Dialogs
         [LuisIntent("Deposit")]
         public async Task HandleDepositIntent(IDialogContext context, LuisResult result)
         {
-            await context.PostAsync("PostAsync: Deposit");
+            //await context.PostAsync("PostAsync: Deposit");
 
             BankAccount accountToUpdate = await accountUpdate(context, result, Constants.Deposit);
 
-            await context.PostAsync($"PostAsync: {accountToUpdate.Balance}");
+            await context.PostAsync($"Deposit: {accountToUpdate.Balance}");
             context.Wait(this.MessageReceived);
         }
 
@@ -143,10 +150,10 @@ namespace ContosoBankChatbot.Dialogs
         [LuisIntent("Withdraw")]
         public async Task HandleWithdrawIntent(IDialogContext context, LuisResult result)
         {
-            await context.PostAsync("PostAsync: Withdraw");
+            //await context.PostAsync("PostAsync: Withdraw");
 
             BankAccount accountToUpdate = await accountUpdate(context, result, Constants.Withdraw);
-
+            await context.PostAsync($"Withdraw: {accountToUpdate.Balance}");
             context.Wait(this.MessageReceived);
         }
 
@@ -221,13 +228,34 @@ namespace ContosoBankChatbot.Dialogs
                 accountToDelete = accountQuery.FirstOrDefault<BankAccount>();
             }
 
-            using (ContosoBankDataContext newDataContext = new ContosoBankDataContext())
+            if (accountToDelete.Balance > 0)
             {
-                newDataContext.Entry(accountToDelete).State = System.Data.Entity.EntityState.Deleted;
-                newDataContext.SaveChanges();
+                await context.PostAsync($"Dear {accountToDelete.UserName}, " +
+                    $"your account has {accountToDelete.Balance} dollars left. " +
+                    $"You cannot delete this account before withdraw all money in the account");
+                context.Wait(this.MessageReceived);
             }
-            await context.PostAsync("PostAsyncDeleteAccount");
-            await ShowOptions(context, $"Dear customer {UserName}, are you sure to delete is account?");
+            else if (accountToDelete.Balance < 0)
+            {
+                await context.PostAsync($"Dear {accountToDelete.UserName}, " +
+                    $"You cannot delete this account before pay off all overdraft ({Math.Abs(accountToDelete.Balance)}) in the account");
+                context.Wait(this.MessageReceived);
+            }
+            else
+            {
+                using (ContosoBankDataContext newDataContext = new ContosoBankDataContext())
+                {
+                    newDataContext.Entry(accountToDelete).State = System.Data.Entity.EntityState.Deleted;
+                    newDataContext.SaveChanges();
+                }
+                context.ConversationData.SetValue(Constants.isLoginKey, false);
+                context.ConversationData.SetValue(Constants.UserNameKey, "");
+                context.ConversationData.SetValue(Constants.UserEmailKey, "");
+                context.ConversationData.SetValue(Constants.UserPhoneNumberKey, "");
+                context.ConversationData.SetValue(Constants.UserBalance, "0");
+                //await context.PostAsync("PostAsyncDeleteAccount");
+                await ShowOptions(context, $"Dear customer {UserName}, are you sure to delete is account?");
+            }
         }
 
         private async Task<double> balanceUpdate(LuisResult result)

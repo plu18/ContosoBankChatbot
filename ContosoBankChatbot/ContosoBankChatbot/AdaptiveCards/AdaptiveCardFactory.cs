@@ -138,7 +138,7 @@ namespace ContosoBankChatbot.AdaptiveCards
                                             new Fact() { Title = "User Name", Value = $"{bankAccount.UserName.ToString()}"},
                                             new Fact() { Title = "Email", Value = $"{bankAccount.Email.ToString()}"},
                                             new Fact() { Title = "Phone Number", Value = $"{bankAccount.PhoneNumber.ToString()}"},
-                                            new Fact() { Title = "Balance", Value = $"{bankAccount.Balance.ToString()}"}
+                                            new Fact() { Title = "Balance", Value = $"$ {bankAccount.Balance.ToString()}"}
                                         }
                                     }
                                 }

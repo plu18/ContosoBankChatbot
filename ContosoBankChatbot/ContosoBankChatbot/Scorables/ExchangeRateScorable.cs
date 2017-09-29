@@ -55,7 +55,7 @@ namespace ContosoBankChatbot.Dialogs
             var message = item as IMessageActivity;
             if (message != null)
             {
-                var exchangeRateDialog = new ExchangeRateLuisDialog();
+                var exchangeRateDialog = new ExchangeRateDialog();
 
                 var interruption = exchangeRateDialog.Void<object, IMessageActivity>();
 

@@ -16,7 +16,7 @@ using Newtonsoft.Json;
 namespace ContosoBankChatbot.Dialogs
 {
     [Serializable]
-    public class ExchangeRateLuisDialog : IDialog<string>
+    public class ExchangeRateDialog : IDialog<string>
     {
         private const string YesOption = "Yes";
         private const string NoOption = "No";

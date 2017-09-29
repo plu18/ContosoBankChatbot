@@ -44,5 +44,8 @@ namespace ContosoBankChatbot
         public const string ExchangeToInputId = "ExchangeToInputId";
         public const string ExchangeRateInputValue = "ExchangeRateInputValue";
 
+        public const string YesOption = "Yes";
+        public const string NoOption = "No";
+
     }
 }
